@@ -1,16 +1,25 @@
 package creational;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 /**
  * A singleton is such a class for which there will be one and only
  * one object created in the given JVM.
  */
-public class Singleton {
+public class Singleton implements Serializable, Cloneable {
     private static Singleton instance;
 
     /* private constructor to stop initialization from outside. */
     private Singleton() {
+        if (instance != null){
+            throw new RuntimeException("Cannot create, please use getInstance()");
+        }
+        // proceed with instance creation
+        System.out.println("Creating instance...");
     }
 
+    /* synchronized method to provide single thread access at a time. */
     public static synchronized Singleton getInstance() {
         if (instance == null) {
             instance = new Singleton();
@@ -18,7 +27,19 @@ public class Singleton {
         return instance;
     }
 
-    public void print() {
-        System.out.println("The singleton object is: " + this.hashCode());
+    /* Cloning not allowed, so two objects cannot be different. */
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
+
+    /* It does not allow deserialization to create a new object */
+    private Object readResolve() throws ObjectStreamException {
+        System.out.println("... Read Resolve before deserialization...");
+        return instance;
+    }
+
+    public static void print(String name, Singleton singleton) {
+        System.out.println(String.format("Object : %s, Hashcode : %d", name, singleton.hashCode()));
     }
 }
