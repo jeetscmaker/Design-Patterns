@@ -8,7 +8,7 @@ import java.io.Serializable;
  * one object created in the given JVM.
  */
 public class Singleton implements Serializable, Cloneable {
-    private static Singleton instance;
+    private static volatile Singleton instance;
 
     /* private constructor to stop initialization from outside. */
     private Singleton() {
