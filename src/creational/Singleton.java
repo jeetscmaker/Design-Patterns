@@ -19,10 +19,14 @@ public class Singleton implements Serializable, Cloneable {
         System.out.println("Creating instance...");
     }
 
-    /* synchronized method to provide single thread access at a time. */
-    public static synchronized Singleton getInstance() {
-        if (instance == null) {
-            instance = new Singleton();
+    /* Double check locking to provide single thread access at a time. */
+    public static Singleton getInstance() {
+        if (instance == null) { // first null check.
+            synchronized (Singleton.class){
+                if (instance ==  null){ // second null check
+                    instance = new Singleton();
+                }
+            }
         }
         return instance;
     }
