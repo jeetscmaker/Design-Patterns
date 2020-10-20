@@ -6,3 +6,4 @@ out/
 *.jar
 *.project
 *.iml
+/.classpath

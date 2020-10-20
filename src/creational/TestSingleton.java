@@ -9,7 +9,8 @@ import java.lang.reflect.Constructor;
 import static creational.Singleton.print;
 
 public class TestSingleton {
-    public static void main(String[] args) throws Exception {
+    @SuppressWarnings({ "rawtypes", "unchecked", "resource" })
+	public static void main(String[] args) throws Exception {
         Singleton s1 = Singleton.getInstance();
         Singleton s2 = Singleton.getInstance();
         print("s1", s1);
