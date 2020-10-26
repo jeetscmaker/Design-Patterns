@@ -74,16 +74,19 @@ class Factory {
 
 public class PrototypeFactory {
     public static void main(String[] args) {
-        if (args.length > 0) {
-            for (String type : args) {
-                Person prototype = Factory.getPrototype(type);
-                if (prototype != null) {
-                    System.out.println(prototype);
-                }
-            }
-        } else {
-            System.out.println("Run again with arguments of command string ");
-        }
+        /* The different values of hashcode prove that the two prototypes are different.
+         * In case of singleton, hashcode will give same value for a given class's instances.
+         * */
+        Person typeTom = Factory.getPrototype("tom");
+        Person typeTom2 = Factory.getPrototype("tom");
+        System.out.println("Tom1: " + typeTom.hashCode() + ", " + "Tom2: " + typeTom2.hashCode());
+
+        Person typeRobert = Factory.getPrototype("robert");
+        Person typeRobert2 = Factory.getPrototype("robert");
+        System.out.println("Robert1: " + typeRobert.hashCode() + ", " + "Robert2: " + typeRobert2.hashCode());
+
+        Person typeHarry = Factory.getPrototype("harry");
+        Person typeHarry2 = Factory.getPrototype("harry");
+        System.out.println("Harry1: " + typeHarry.hashCode() + ", " + "Harry2: " + typeHarry2.hashCode());
     }
 }
-
