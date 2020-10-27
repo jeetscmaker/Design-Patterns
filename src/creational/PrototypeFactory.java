@@ -4,7 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Abstract Factory might store a set of Prototypes from which to clone and return product objects.
+ * The fundamental idea behind Prototype design pattern is returning a new copy
+ * of the object everytime. It can be thought of just opposite of what Singleton
+ * does. A Singleton returns a unique object always, a Prototype returns a copy
+ * or clone of the original object.
  */
 
 interface Person {
