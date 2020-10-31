@@ -1,0 +1,67 @@
+Essentially, the strategy pattern allows us to change the behavior of an algorithm at runtime.
+Typically, we would start with an interface which is used to apply an algorithm, and then implement
+ it multiple times for each possible algorithm.
+Let's say we have a requirement to apply different types of discounts to a purchase, based on whether
+ it's a Christmas, Easter or New Year.
+ First, let's create a Discounter interface which will be implemented by each of our strategies:
+ public interface Discounter {
+ 	    BigDecimal applyDiscount(BigDecimal amount);
+ 	}
+ Then let's say we want to apply a 50% discount at Easter and a 10% discount at Christmas.
+ Let's implement our interface for each of these strategies:
+ public static class EasterDiscounter implements Discounter {
+ 	    @Override
+ 	    public BigDecimal applyDiscount(final BigDecimal amount) {
+ 	        return amount.multiply(BigDecimal.valueOf(0.5));
+ 	    }
+ 	}
+ public static class ChristmasDiscounter implements Discounter {
+ 	   @Override
+ 	   public BigDecimal applyDiscount(final BigDecimal amount) {
+ 	       return amount.multiply(BigDecimal.valueOf(0.9));
+ 	   }
+ 	}
+ Finally, let's try a strategy in a test:
+ Discounter easterDiscounter = new EasterDiscounter();
+ BigDecimal discountedValue = easterDiscounter.applyDiscount(BigDecimal.valueOf(100));
+ assertThat(discountedValue).isEqualByComparingTo(BigDecimal.valueOf(50));
+
+ This works quite well, but the problem is it can be a little bit of a pain to have to create a concrete
+ class for each strategy. The alternative would be to use anonymous inner types, but that's still quite
+ verbose and not much handier than the previous solution:
+ Discounter easterDiscounter = new Discounter() {
+ 	    @Override
+ 	    public BigDecimal applyDiscount(final BigDecimal amount) {
+ 	        return amount.multiply(BigDecimal.valueOf(0.5));
+ 	    }
+ 	};
+ Since Java 8 has been released, the introduction of lambdas has made anonymous inner types more
+ or less redundant. That means creating strategies in line is now a lot cleaner and easier.
+ Furthermore, the declarative style of functional programming lets us implement patterns that
+ were not possible before.
+ Let's try creating an inline EasterDiscounter, only this time using a lambda expression:
+ 	Discounter easterDiscounter = amount -> amount.multiply(BigDecimal.valueOf(0.5));
+ As we can see, our code is now a lot cleaner and more maintainable, achieving the same as
+ before but in a single line. Essentially, a lambda can be seen as a replacement for an anonymous inner type.
+ This advantage becomes more apparent when we want to declare even more Discounters in line:
+ List<Discounter> discounters = newArrayList(
+ 	  amount -> amount.multiply(BigDecimal.valueOf(0.9)),
+ 	  amount -> amount.multiply(BigDecimal.valueOf(0.8)),
+ 	  amount -> amount.multiply(BigDecimal.valueOf(0.5))
+ 	);
+ When we want to define lots of Discounters, we can declare them statically all in one place.
+ Java 8 even lets us define static methods in interfaces if we want to.
+ So instead of choosing between concrete classes or anonymous inner types,
+ let's try creating lambdas all in a single class:
+ public interface Discounter {
+ 	    BigDecimal applyDiscount(BigDecimal amount);
+        static Discounter christmasDiscounter() {
+ 	        return amount -> amount.multiply(BigDecimal.valueOf(0.9));
+ 	    }
+        static Discounter newYearDiscounter() {
+ 	        return amount -> amount.multiply(BigDecimal.valueOf(0.8));
+ 	    }
+ 	    static Discounter easterDiscounter() {
+ 	        return amount -> amount.multiply(BigDecimal.valueOf(0.5));
+ 	    }
+ 	}
