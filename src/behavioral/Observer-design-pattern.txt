@@ -1,0 +1,178 @@
+1. What Is the Observer Pattern?
+Observer is a behavioral design pattern. It specifies communication between objects:
+observable and observers. An observable is an object which notifies observers about the
+changes in its state.
+
+For example, a news agency can notify channels when it receives news. Receiving news is
+what changes the state of the news agency, and it causes the channels to be notified.
+Let's see how we can implement it ourselves.
+
+First, let's define the NewsAgency class:
+
+	public class NewsAgency {
+	    private String news;
+	    private List<Channel> channels = new ArrayList<>();
+
+	    public void addObserver(Channel channel) {
+	        this.channels.add(channel);
+	    }
+
+	    public void removeObserver(Channel channel) {
+	        this.channels.remove(channel);
+	    }
+
+	    public void setNews(String news) {
+	        this.news = news;
+	        for (Channel channel : this.channels) {
+	            channel.update(this.news);
+	        }
+	    }
+	}
+
+NewsAgency is an observable, and when news gets updated, the state of NewsAgency changes.
+When the change happens, NewsAgency notifies the observers about this fact by calling their update() method.
+
+To be able to do that, the observable object needs to keep references to the observers, and in our
+case, it's the channels variable.
+
+Let's now see how the observer, the Channel class, can look like. It should have the update() method
+which is invoked when the state of NewsAgency changes:
+
+	public class NewsChannel implements Channel {
+	    private String news;
+
+	    @Override
+	    public void update(Object news) {
+	        this.setNews((String) news);
+	    }
+	}
+
+The Channel interface has only one method:
+
+	public interface Channel {
+	    public void update(Object o);
+	}
+
+Now, if we add an instance of NewsChannel to the list of observers, and change the state of NewsAgency,
+the instance of NewsChannel will be updated:
+
+	NewsAgency observable = new NewsAgency();
+	NewsChannel observer = new NewsChannel();
+
+	observable.addObserver(observer);
+	observable.setNews("news");
+	assertEquals(observer.getNews(), "news");
+
+There's a predefined Observer interface in Java core libraries, which makes implementing the observer
+pattern even simpler. Let's look at it.
+
+2. Implementation With Observer
+The java.util.Observer interface defines the update() method, so there's no need to define it ourselves
+as we did in the previous section.
+
+Let's see how we can use it in our implementation:
+
+	public class ONewsChannel implements Observer {
+
+	    private String news;
+
+	    @Override
+	    public void update(Observable o, Object news) {
+	        this.setNews((String) news);
+	    }
+	}
+
+Here, the second argument comes from Observable as we'll see below.
+
+To define the observable, we need to extend Java's Observable class:
+
+	public class ONewsAgency extends Observable {
+	    private String news;
+
+	    public void setNews(String news) {
+	        this.news = news;
+	        setChanged();
+	        notifyObservers(news);
+	    }
+	}
+
+Note that we don't need to call the observer's update() method directly. We just call setChanged()
+and notifyObservers(), and the Observable class is doing the rest for us.
+Also, it contains a list of observers and exposes methods to maintain that
+list – addObserver() and deleteObserver().
+
+To test the result, we just need to add the observer to this list and to set the news:
+
+	ONewsAgency observable = new ONewsAgency();
+	ONewsChannel observer = new ONewsChannel();
+
+	observable.addObserver(observer);
+	observable.setNews("news");
+	assertEquals(observer.getNews(), "news");
+
+Observer interface isn't perfect and is deprecated since Java 9. One of its cons is that
+Observable isn't an interface but a class, that's why subclasses can't be used as observables.
+
+Also, a developer could override some of the Observable‘s synchronized methods and disrupt their thread-safety.
+
+Let's look at the ProperyChangeListener interface, which is recommended instead of using Observer.
+
+3. Implementation With PropertyChangeListener
+    In this implementation, an observable must keep a reference to the PropertyChangeSupport instance.
+    It helps to send the notifications to observers when a property of the class is changed.
+
+Let's define the observable:
+
+	public class PCLNewsAgency {
+	    private String news;
+
+	    private PropertyChangeSupport support;
+
+	    public PCLNewsAgency() {
+	        support = new PropertyChangeSupport(this);
+	    }
+
+	    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+	        support.addPropertyChangeListener(pcl);
+	    }
+
+	    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+	        support.removePropertyChangeListener(pcl);
+	    }
+
+	    public void setNews(String value) {
+	        support.firePropertyChange("news", this.news, value);
+	        this.news = value;
+	    }
+	}
+
+Using this support, we can add and remove observers, and notify them when the state of the observable changes:
+
+	support.firePropertyChange("news", this.news, value);
+
+Here, the first argument is the name of the observed property. The second and the third arguments are
+its old and new value accordingly.
+
+Observers should implement PropertyChangeListener:
+
+	public class PCLNewsChannel implements PropertyChangeListener {
+
+	    private String news;
+
+	    public void propertyChange(PropertyChangeEvent evt) {
+	        this.setNews((String) evt.getNewValue());
+	    }
+	}
+
+Due to the PropertyChangeSupport class which is doing the wiring for us, we can restore the
+new property value from the event.
+
+Let's test the implementation to make sure that it also works:
+
+	PCLNewsAgency observable = new PCLNewsAgency();
+	PCLNewsChannel observer = new PCLNewsChannel();
+
+	observable.addPropertyChangeListener(observer);
+	observable.setNews("news");
+
+	assertEquals(observer.getNews(), "news");
