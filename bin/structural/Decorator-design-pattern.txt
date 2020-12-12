@@ -1,0 +1,61 @@
+A Decorator pattern can be used to attach additional responsibilities to an object
+either statically or dynamically. A Decorator provides an enhanced interface to the
+original object.
+In the implementation of this pattern, we prefer composition over an inheritance –
+so that we can reduce the overhead of subclassing again and again for each decorating
+element. The recursion involved with this design can be used to decorate our object
+as many times as we require.
+Suppose we have a Christmas tree object and we want to decorate it. The decoration
+does not change the object itself; it’s just that in addition to the Christmas tree,
+we're adding some decoration items like garland, tinsel, tree-topper, bubble lights, etc.
+For this scenario, we'll follow the original Gang of Four design and naming conventions.
+First, we'll create a ChristmasTree interface and its implementation:
+	public interface ChristmasTree {
+	    String decorate();
+	}
+The implementation of this interface will look like:
+	public class ChristmasTreeImpl implements ChristmasTree {
+	    @Override
+	    public String decorate() {
+	        return "Christmas tree";
+	    }
+	}
+We'll now create an abstract TreeDecorator class for this tree. This decorator will implement the
+ChristmasTree interface as well as hold the same object. The implemented method from the same
+interface will simply call the decorate() method from our interface:
+	public abstract class TreeDecorator implements ChristmasTree {
+	    private ChristmasTree tree;
+	    // standard constructors
+	    @Override
+	    public String decorate() {
+	        return tree.decorate();
+	    }
+	}
+We'll now create some decorating element. These decorators will extend our abstract TreeDecorator
+class and will modify its decorate() method according to our requirement:
+	public class BubbleLights extends TreeDecorator {
+	    public BubbleLights(ChristmasTree tree) {
+	        super(tree);
+	    }
+	    public String decorate() {
+	        return super.decorate() + decorateWithBubbleLights();
+	    }
+	    private String decorateWithBubbleLights() {
+	        return " with Bubble Lights";
+	    }
+	}
+For this case, the following is true:
+	@Test
+	public void whenDecoratorsInjectedAtRuntime_thenConfigSuccess() {
+	    ChristmasTree tree1 = new Garland(new ChristmasTreeImpl());
+	    assertEquals(tree1.decorate(),
+	      "Christmas tree with Garland");
+
+	    ChristmasTree tree2 = new BubbleLights(
+	      new Garland(new Garland(new ChristmasTreeImpl())));
+	    assertEquals(tree2.decorate(),
+	      "Christmas tree with Garland with Garland with Bubble Lights");
+	}
+Note that in the first tree1 object, we're only decorating it with only one Garland,
+while the other tree2 object we're decorating with one BubbleLights and two Garlands.
+This pattern gives us this flexibility to add as many decorators as we want at runtime.
